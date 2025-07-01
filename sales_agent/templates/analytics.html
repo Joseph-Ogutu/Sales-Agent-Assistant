@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sales Analytics Dashboard - AI Sales Agent</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2f4f7f;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: #1a1d23;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .button {
+            background: #03A9F4;
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover {
+            background: #039BE5;
+        }
+
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background: #1a1d23;
+            padding: 20px;
+            border-radius: 5px;
+            flex: 1;
+            margin: 0 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .metric h3 {
+            font-weight: 400;
+            font-size: 16px;
+            color: #ccc;
+        }
+
+        .metric p {
+            font-weight: 600;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        .chart-container {
+            background: #1a1d23;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .table-container {
+            background: #1a1d23;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a class="button" href="{% url 'dashboard' %}">Back to Dashboard</a>
+            <h1>Sales Analytics Dashboard</h1>
+            <p><a class="button" href="{% url 'logout' %}">Logout</a></p>
+        </div>
+        <div class="metrics">
+            <div class="metric">
+                <h3>Conversion Rate</h3>
+                <p>{{ conversion_rate|floatformat:2 }}%</p>
+            </div>
+            <div class="metric">
+                <h3>Average Engagement</h3>
+                <p>{{ avg_engagement|floatformat:2 }}%</p>
+            </div>
+            <div class="metric">
+                <h3>Sequence Completion</h3>
+                <p>{{ sequence_completion|floatformat:2 }}%</p>
+            </div>
+        </div>
+        <div class="chart-container">
+            <h2>Sales Pipeline</h2>
+            <canvas id="pipelineChart"></canvas>
+        </div>
+        <div class="table-container">
+            <h2>Lead Distribution by Industry</h2>
+            <table>
+                <tr>
+                    <th>Industry</th>
+                    <th>Number of Leads</th>
+                </tr>
+                {% for item in industry_data %}
+                    <tr>
+                        <td>{{ item.industry }}</td>
+                        <td>{{ item.count }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+    <script>
+        const ctx = document.getElementById('pipelineChart').getContext('2d');
+        const funnelData = {{ funnel_data }};
+        if (funnelData.length > 0) {
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Leads', 'Engaged', 'Converted'],
+                    datasets: [{
+                        label: 'Sales Pipeline',
+                        data: funnelData,
+                        backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)'],
+                        borderColor: ['rgba(75, 192, 192, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 99, 132, 1)'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: { display: true, text: 'Sales Pipeline', color: '#fff' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: '#fff' }, grid: { color: '#333' } },
+                        x: { ticks: { color: '#fff' }, grid: { color: '#333' } }
+                    }
+                }
+            });
+        } else {
+            document.getElementById('pipelineChart').innerHTML = 'No data available';
+        }
+    </script>
+</body>
+</html>

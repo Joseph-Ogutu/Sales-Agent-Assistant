@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Sales Agent Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #2f4f7f; /* Dark blue background */
+            color: #fff; /* White text */
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            background-color: #1a1d23; /* Dark background */
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 1px solid #333; /* Dark border */
+        }
+
+        .header h1 {
+            font-weight: 600;
+            font-size: 24px;
+            color: #03A9F4; /* Blue color for headings */
+        }
+
+        .header .button {
+            background: #03A9F4; /* Blue color for buttons */
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .header .button:hover {
+            background: #039BE5; /* Darker blue on hover */
+        }
+
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            background-color: #2f4f7f; /* Dark blue background for metrics */
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            margin: 0 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .metric h3 {
+            font-weight: 400;
+            font-size: 16px;
+            color: #fff; /* White text for metric headings */
+        }
+
+        .metric p {
+            font-weight: 600;
+            font-size: 24px;
+            color: #f70237; /* Blue color for metric values */
+        }
+
+        .form-container {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            background-color: #2f4f7f; /* Dark blue background for form container */
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #333; /* Dark border */
+            border-radius: 4px;
+            background-color: #1a1d23; /* Dark background for inputs */
+            color: #fff; /* White text for inputs */
+        }
+
+        button, .button {
+            background: #03A9F4; /* Blue color for buttons */
+            color: #fff;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        button:hover, .button:hover {
+            background: #039BE5; /* Darker blue on hover */
+        }
+
+        .filter-form {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            background-color: #2f4f7f; /* Dark blue background for filter form */
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            padding: 10px;
+            border-bottom: 1px solid #333; /* Dark border for list items */
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        .chart-container {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            background-color: #2f4f7f; /* Dark blue background for chart container */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Sales Agent Dashboard</h1>
+            <div>
+                <a class="button" href="{% url 'analytics' %}">View Analytics</a>
+                <a class="button" href="{% url 'logout' %}">Logout</a>
+            </div>
+        </div>
+        {% if message %}
+            <p class="success" style="color: green;">{{ message }}</p>
+        {% endif %}
+        <div class="metrics">
+            <div class="metric">
+                <h3>Total Leads</h3>
+                <p>{{ total_leads }}</p>
+            </div>
+            <div class="metric">
+                <h3>Active Sequences</h3>
+                <p>{{ active_sequences }}</p>
+            </div>
+        </div>
+        <h2 style="margin-top: 20px; color: #03A9F4;">Add New Lead</h2>
+        <div class="form-container">
+            <form method="POST">
+                {% csrf_token %}
+                {{ lead_form.as_p }}
+                <button type="submit">Add Lead</button>
+            </form>
+        </div>
+        <h2 style="color: #03A9F4;">Filter Leads</h2>
+        <div class="filter-form">
+            <form method="GET">
+                <select name="filter_type">
+                    <option value="">Select Filter</option>
+                    <option value="score" {% if filter_type == 'score' %}selected{% endif %}>Score</option>
+                    <option value="industry" {% if filter_type == 'industry' %}selected{% endif %}>Industry</option>
+                    <option value="engagement" {% if filter_type == 'engagement' %}selected{% endif %}>Engagement Level</option>
+                </select>
+                <input type="text" name="filter_value" value="{{ filter_value }}" placeholder="Enter value (e.g., 0.5, Tech, 0.7)">
+                <button type="submit">Filter</button>
+            </form>
+        </div>
+        <h2 style="color: #03A9F4;">Leads</h2>
+        <ul>
+            {% for lead in leads %}
+                <li>{{ lead.name }} ({{ lead.email }}) - Score: {{ lead.score|floatformat:2 }} - <a class="button" href="{% url 'start_sequence' lead.id %}">Start Sequence</a></li>
+            {% endfor %}
+        </ul>
+        <h2 style="color: #03A9F4;">Interactions</h2>
+        <ul>
+            {% for interaction in interactions %}
+                <li>{{ interaction.message_type|capfirst }}: {{ interaction.content|truncatewords:20 }} ({{ interaction.sent_at }}) {% if interaction.coaching_feedback %} - Coaching: {{ interaction.coaching_feedback|truncatewords:20 }} {% endif %}</li>
+            {% endfor %}
+        </ul>
+        <div class="chart-container">
+            <canvas id="engagementChart"></canvas>
+        </div>
+    </div>
+    <script>
+        const ctx = document.getElementById('engagementChart').getContext('2d');
+        const engagementLevels = {{ engagement_levels }};
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [{% for lead in leads %}'{{ lead.name }}',{% endfor %}],
+                datasets: [{
+                    label: 'Engagement Level',
+                    data: engagementLevels,
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' },
+                    title: { display: true, text: 'Lead Engagement Levels', color: '#fff' }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { color: '#fff' }, grid: { color: '#333' } },
+                    x: { ticks: { color: '#fff' }, grid: { color: '#333' } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

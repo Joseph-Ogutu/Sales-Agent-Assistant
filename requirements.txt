@@ -1,0 +1,8 @@
+django
+requests
+transformers
+openai
+google-auth-oauthlib
+google-api-python-client
+scikit-learn
+twilio

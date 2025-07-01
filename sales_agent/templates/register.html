@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - AI Sales Agent</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+        .container { max-width: 400px; margin: 100px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #333; }
+        form { display: flex; flex-direction: column; }
+        label { margin-top: 10px; color: #555; }
+        input { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #4CAF50; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #45a049; }
+        .error { color: red; font-size: 0.9em; margin: 5px 0; }
+        .success { color: green; font-size: 0.9em; margin: 5px 0; }
+        a { color: #4CAF50; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register</h2>
+        {% for message in messages %}
+            <p class="{% if message.tags == 'error' %}error{% else %}success{% endif %}">{{ message }}</p>
+        {% endfor %}
+        <form method="POST">
+            {% csrf_token %}
+            {% for field in form %}
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    {% for error in field.errors %}
+                        <p class="error">{{ error }}</p>
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+    </div>
+</body>
+</html>
